@@ -1,0 +1,67 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2025-06-30T19:14:04+00:00",
+    "name": "LeafMC",
+    "author": "contact@xahosting.co",
+    "description": "LeafMC is a high-performance Minecraft server software that aims to find balance between performance, vanilla and stability.",
+    "features": [
+        "eula"
+    ],
+    "docker_images": {
+        "Java 21": "ghcr.io\/pterodactyl\/yolks:java_21",
+        "Java 18": "ghcr.io\/pterodactyl\/yolks:java_18",
+        "Java 17": "ghcr.io\/pterodactyl\/yolks:java_17",
+        "Java 17J9 (Memory-efficient but lacks stability)": "ghcr.io\/pterodactyl\/yolks:java_17j9"
+    },
+    "file_denylist": [],
+    "startup": "java -Xms256M -Xmx{{SERVER_MEMORY}}M -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}",
+    "config": {
+        "files": "{\r\n    \"server.properties\": {\r\n        \"parser\": \"properties\",\r\n        \"find\": {\r\n            \"server-ip\": \"0.0.0.0\",\r\n            \"server-port\": \"{{server.build.default.port}}\",\r\n            \"query.port\": \"{{server.build.default.port}}\"\r\n        }\r\n    }\r\n}",
+        "startup": "{\r\n    \"done\": \")! For help, type \",\r\n    \"userInteraction\": [\r\n        \"Go to eula.txt for more info.\"\r\n    ]\r\n}",
+        "logs": "{}",
+        "stop": "stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\n# LeafMC Installation Script\r\n\r\n# Server Files Directory\r\ncd \/mnt\/server\r\n\r\n# Install dependencies\r\napt-get update\r\napt-get install -y curl jq wget imagemagick\r\n\r\n# Set version\r\nif [ -z \"${MINECRAFT_VERSION}\" ] || [ \"${MINECRAFT_VERSION}\" == \"latest\" ]; then\r\n    echo \"Fetching latest LeafMC version...\"\r\n    MINECRAFT_VERSION=$(curl -s -A \"Mozilla\/5.0\" https:\/\/api.leafmc.one\/v2\/projects\/leaf | jq -r '.versions[-1]')\r\n    [ -z \"$MINECRAFT_VERSION\" ] || [ \"$MINECRAFT_VERSION\" == \"null\" ] && MINECRAFT_VERSION=\"1.21.1\"\r\nfi\r\necho \"Using version: ${MINECRAFT_VERSION}\"\r\n\r\n# Set build\r\nif [ -z \"${BUILD_NUMBER}\" ] || [ \"${BUILD_NUMBER}\" == \"latest\" ]; then\r\n    echo \"Fetching latest build...\"\r\n    BUILD_NUMBER=$(curl -s -A \"Mozilla\/5.0\" https:\/\/api.leafmc.one\/v2\/projects\/leaf\/versions\/${MINECRAFT_VERSION} | jq -r '.builds[-1]')\r\n    [ -z \"$BUILD_NUMBER\" ] || [ \"$BUILD_NUMBER\" == \"null\" ] && BUILD_NUMBER=\"1\"\r\nfi\r\necho \"Using build: ${BUILD_NUMBER}\"\r\n\r\n# Download\r\nJAR_NAME=\"leaf-${MINECRAFT_VERSION}-${BUILD_NUMBER}.jar\"\r\nDOWNLOAD_URL=\"https:\/\/api.leafmc.one\/v2\/projects\/leaf\/versions\/${MINECRAFT_VERSION}\/builds\/${BUILD_NUMBER}\/downloads\/${JAR_NAME}\"\r\n\r\n[ -f \"${SERVER_JARFILE}\" ] && mv ${SERVER_JARFILE} ${SERVER_JARFILE}.old\r\n\r\necho \"Downloading LeafMC jar from ${DOWNLOAD_URL}\"\r\ncurl -L -o ${SERVER_JARFILE} \\\r\n     -A \"Mozilla\/5.0 (compatible; LeafMC-Pterodactyl-Installer\/1.0)\" \\\r\n     -H \"Accept: application\/octet-stream, application\/java-archive, *\/*\" \\\r\n     --connect-timeout 30 --max-time 300 --retry 3 \\\r\n     \"${DOWNLOAD_URL}\"\r\n     \r\n# Validate download\r\nFILE_SIZE=$(stat -c%s ${SERVER_JARFILE} 2>\/dev\/null || echo 0)\r\necho \"Downloaded file size: ${FILE_SIZE} bytes\"\r\n\r\nif [ ${FILE_SIZE} -lt 1048576 ]; then\r\n    echo \"API download failed, trying GitHub releases...\"\r\n    for URL in \\\r\n        \"https:\/\/github.com\/LeafMC\/Leaf\/releases\/download\/v${MINECRAFT_VERSION}\/leaf-${MINECRAFT_VERSION}.jar\" \\\r\n        \"https:\/\/github.com\/LeafMC\/Leaf\/releases\/download\/${MINECRAFT_VERSION}\/leaf-${MINECRAFT_VERSION}.jar\" \\\r\n        \"https:\/\/github.com\/LeafMC\/Leaf\/releases\/latest\/download\/leaf.jar\"\r\n    do\r\n        echo \"Trying: $URL\"\r\n        curl -L -o ${SERVER_JARFILE} -A \"Mozilla\/5.0\" \"$URL\"\r\n        FILE_SIZE=$(stat -c%s ${SERVER_JARFILE} 2>\/dev\/null || echo 0)\r\n        [ ${FILE_SIZE} -gt 1048576 ] && break\r\n    done\r\nfi\r\n\r\n# Final validation\r\nif [ ! -f ${SERVER_JARFILE} ] || [ ${FILE_SIZE} -lt 1048576 ]; then\r\n    echo \"ERROR: Failed to download LeafMC jar\"\r\n    exit 1\r\nfi\r\necho \"Successfully downloaded LeafMC jar (${FILE_SIZE} bytes)\"\r\n\r\n# Create eula.txt\r\necho \"eula=false\" > eula.txt\r\n\r\necho \"\"\r\necho \"==========================================\"\r\necho \"LeafMC Installation Complete!\"\r\necho \"Version: ${MINECRAFT_VERSION}\"\r\necho \"Build: ${BUILD_NUMBER}\"\r\necho \"Jar file: ${SERVER_JARFILE} (${FILE_SIZE} bytes)\"\r\necho \"MOTD: Welcome to LeafMC!\"\r\necho \"Server is ready to start!\"\r\necho \"Accept the EULA before launching.\"\r\necho \"==========================================\"\r\necho \"\"",
+            "container": "ghcr.io\/pterodactyl\/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Minecraft Version",
+            "description": "The version of LeafMC to download. Leave at latest to always get the latest version.",
+            "env_variable": "MINECRAFT_VERSION",
+            "default_value": "latest",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Jar File",
+            "description": "The name of the server jarfile to run the server with.",
+            "env_variable": "SERVER_JARFILE",
+            "default_value": "server.jar",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|regex:\/^([\\w\\d._-]+)(\\.jar)$\/",
+            "field_type": "text"
+        },
+        {
+            "name": "Build Number",
+            "description": "The build number for the LeafMC release. Leave at latest to always get the latest build.",
+            "env_variable": "BUILD_NUMBER",
+            "default_value": "latest",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        }
+    ]
+}
