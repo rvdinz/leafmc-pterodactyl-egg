@@ -9,3 +9,6 @@ The LeafMC server requires a single port for access (default 25565) but plugins 
 | Port | **default** |
 |------|-------------|
 | Game | 25565       |
+
+# Credits to rblktenarios (on discord)!
+Big thanks to rblktenarios, I used parts of their LeafMC egg as a starting point. It wasn’t fully based on theirs, but it helped a lot (his was based on his host/he had parts from his hosting company GaleniusNodes).
