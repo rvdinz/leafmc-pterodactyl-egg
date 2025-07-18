@@ -12,7 +12,15 @@
         "eula"
     ],
     "docker_images": {
-        "Java 21": "ghcr.io\/pterodactyl\/yolks:java_21",
+        "GraalVM Java 24": "ghcr.io/rikodev/pterodactyl-graalvm:24-JDK",
+        "Java 24": "ghcr.io/mcjars/pterodactyl-yolks:java_24",
+        "Java 24 (Alpine)": "booky10/yolks:javaalpine24",
+
+        "GraalVM Java 21": "ghcr.io/rikodev/pterodactyl-graalvm:21-jdk",
+        "Corretto Java 21": "ghcr.io/trenutoo/pterodactyl-images:java_21_corretto",
+        "Java 21": "ghcr.io/pterodactyl/yolks:java_21",
+        "Java 21 (Alpine)": "booky10/yolks:javaalpine21",
+        
         "Java 18": "ghcr.io\/pterodactyl\/yolks:java_18",
         "Java 17": "ghcr.io\/pterodactyl\/yolks:java_17",
         "Java 17J9 (Memory-efficient but lacks stability)": "ghcr.io\/pterodactyl\/yolks:java_17j9"
